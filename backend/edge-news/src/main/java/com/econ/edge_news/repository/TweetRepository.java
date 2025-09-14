@@ -1,8 +1,8 @@
 package com.econ.edge_news.repository;
 
-import com.econ.edge_news.entity.Bills;
+import com.econ.edge_news.entity.Tweet;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface BillsRepository extends JpaRepository<Bills, Long>{
+public interface TweetRepository extends JpaRepository<Tweet, Long>{
     
 }

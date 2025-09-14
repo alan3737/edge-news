@@ -6,23 +6,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
-import com.econ.edge_news.repository.TweetsRepository;
-import com.econ.edge_news.entity.Tweets;
+import com.econ.edge_news.repository.TweetRepository;
+import com.econ.edge_news.entity.Tweet;
 
 @RestController
 @RequestMapping("/tweets")
-public class TweetsController {
+public class TweetController {
 
     @Autowired
-    private TweetsRepository repository;
+    private TweetRepository repository;
 
     @GetMapping
-    public List<Tweets> getAllTweets(){
+    public List<Tweet> getAllTweets(){
         return repository.findAll();
     }
 
     @PostMapping
-    public void addTweet(@RequestBody Tweets tweet){
+    public void addTweet(@RequestBody Tweet tweet){
         repository.save(tweet);
     }
 }
