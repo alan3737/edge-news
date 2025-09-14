@@ -5,23 +5,23 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.econ.edge_news.entity.Bills;
-import com.econ.edge_news.repository.BillsRepository;
+import com.econ.edge_news.entity.Bill;
+import com.econ.edge_news.repository.BillRepository;
 
 @RestController
 @RequestMapping("/bills")
-public class BillsController {
+public class BillController {
 
     @Autowired
-    private BillsRepository repository;
+    private BillRepository repository;
 
     @GetMapping
-    public List<Bills> getAllBills(){
+    public List<Bill> getAllBills(){
         return repository.findAll();
     }
 
     @PostMapping
-    public void addBill(@RequestBody Bills bill){
+    public void addBill(@RequestBody Bill bill){
         repository.save(bill);
     }
 }
