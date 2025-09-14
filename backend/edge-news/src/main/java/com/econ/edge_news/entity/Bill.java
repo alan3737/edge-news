@@ -8,6 +8,7 @@ public class Bill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long billId;
+    @Column(columnDefinition = "TEXT")
     String billTitle;
     @Column(columnDefinition = "TEXT")
     String billContent;
