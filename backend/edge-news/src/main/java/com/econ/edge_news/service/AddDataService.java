@@ -10,10 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.econ.edge_news.entity.Bill;
+import com.econ.edge_news.entity.FederalReservePressRelease;
 import com.econ.edge_news.entity.MetaData;
 import com.econ.edge_news.repository.BillRepository;
+import com.econ.edge_news.repository.FederalReservePressReleaseRepository;
 import com.econ.edge_news.repository.MetaDataRepository;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+
 import jakarta.transaction.Transactional;
 
 @Service
@@ -22,6 +26,8 @@ public class AddDataService {
   BillRepository billRepository;
   @Autowired
   MetaDataRepository metaRepository;
+  @Autowired
+  FederalReservePressReleaseRepository federalReservePressReleaseRepository;
 
 @Transactional
 public void addBills() throws Exception{
@@ -53,8 +59,7 @@ public void addBills() throws Exception{
       String billUrl = billResponse.get("bill").get("legislationUrl").asText();
       String billDate = summary.get("updateDate").asText();
       String billDateOnly = billDate.split("T")[0];
-      Bill repoBill = billRepository.findByBillTitle(billTitle)
-      ;
+      Bill repoBill = billRepository.findByBillTitle(billTitle);
       if(repoBill == null){
         billRepository.save(new Bill(billTitle, billContent, billUrl, billDateOnly));
       }
@@ -71,13 +76,36 @@ public void addBills() throws Exception{
     metaRepository.save(metaData);
   }
 
-  public void addTweets() throws Exception {
+  public void addFederalReservePressReleases() throws Exception {
+    String xml = WebClient.create().get().uri("https://www.federalreserve.gov/feeds/press_all.xml").retrieve().bodyToMono(String.class).block();
+    XmlMapper xmlMapper = new XmlMapper();
+    JsonNode pressReleaseJSON = xmlMapper.readTree(xml);
+    JsonNode items = pressReleaseJSON.get("channel").get("item");
+    for(JsonNode item: items){
+      String title = item.path("title").asText();
+      String link = item.path("link").asText();
+      String pubDate = item.path("pubDate").asText();
+      FederalReservePressRelease repoPressRelease = federalReservePressReleaseRepository.findByTitle(title);
+      if(repoPressRelease == null){
+        federalReservePressReleaseRepository.save(new FederalReservePressRelease(title, link, pubDate));
+      }
+      else if(!repoPressRelease.getTitle().equals(title) || !repoPressRelease.getLink().equals(link) || !repoPressRelease.getDate().equals(pubDate)){
+        repoPressRelease.setDate(pubDate);
+        repoPressRelease.setLink(link);
+        repoPressRelease.setTitle(title);
+        federalReservePressReleaseRepository.save(repoPressRelease);
+      }
+    }
+  }
 
+  public void addFederalReserveSpeeches() throws Exception {
+    
   }
 
   @Scheduled(fixedRate = 360000)
   public void addData() throws Exception{  
     addBills();
+    addFederalReservePressReleases();
   }
 }
 
