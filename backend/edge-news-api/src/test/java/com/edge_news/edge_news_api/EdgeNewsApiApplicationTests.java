@@ -1,0 +1,13 @@
+package com.edge_news.edge_news_api;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class EdgeNewsApiApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}

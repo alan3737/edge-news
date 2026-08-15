@@ -23,7 +23,7 @@ services:
         - action: rebuild
           path: ./frontend/package.json
   backend:
-    build: ./backend/edge-news-service
+    build: ./backend/edge-news-api
     container_name: java_backend
     ports:
       - "${BACKEND_PORT}:5000"
