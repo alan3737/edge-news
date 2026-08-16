@@ -1,4 +1,5 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
-    "C_Cpp.default.compilerPath": "c:\\Users\\alanz\\Downloads\\winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64msvcrt-13.0.0-r1\\mingw64\\mingwvars.bat"
+    "C_Cpp.default.compilerPath": "c:\\Users\\alanz\\Downloads\\winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64msvcrt-13.0.0-r1\\mingw64\\mingwvars.bat",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
