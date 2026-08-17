@@ -13,7 +13,9 @@ services:
       retries: 3
       start_period: 15s
     depends_on:
-      backend:
+      event-service:
+        condition: service_healthy
+      price-service:
         condition: service_healthy
     develop:
       watch:
@@ -22,11 +24,11 @@ services:
           target: /code
         - action: rebuild
           path: ./frontend/package.json
-  backend:
-    build: ./backend/edge-news-api
-    container_name: java_backend
+  event-service:
+    build: ./backend/event-service
+    container_name: event-service
     ports:
-      - "${BACKEND_PORT}:5000"
+      - "${EVENT_SERVICE_PORT}:5000"
     environment:
       - DB_HOST=${DB_HOST} 
       - DB_PORT=5432
@@ -45,10 +47,37 @@ services:
     develop:
       watch:
         - action: sync+restart
-          path: ./backend
+          path: ./backend/event-service
           target: /code
         - action: rebuild
-          path: ./backend/pom.xml
+          path: ./backend/event-service/pom.xml
+  price-service:
+    build: ./backend/price-service
+    container_name: price-service
+    ports:
+      - "${PRICE_SERVICE_PORT}:4999"
+    environment:
+      - DB_HOST=${DB_HOST} 
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4999/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend/price-service
+          target: /code
+        - action: rebuild
+          path: ./backend/price-service/pom.xml
   database:
     image: postgres:15-alpine
     container_name: postgres_db

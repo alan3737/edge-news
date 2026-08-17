@@ -1,13 +1,13 @@
-package com.edge_news.edge_news_api;
+package com.edge_news.price_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class EdgeNewsApiApplication {
+public class PriceServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(EdgeNewsApiApplication.class, args);
+		SpringApplication.run(PriceServiceApplication.class, args);
 	}
 
 }
