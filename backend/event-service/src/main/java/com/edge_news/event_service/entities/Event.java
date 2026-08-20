@@ -24,17 +24,17 @@ public class Event {
 
   private String title;
   private String source;
-  private OffsetDateTime time;
+  private OffsetDateTime pubDateTime;
   private String aiSummary;
   private String status;
   private String sourceType;
 
   public Event() {}   
 
-  public Event(String title, String source, OffsetDateTime time, String aiSummary, String status, String sourceType) {
+  public Event(String title, String source, OffsetDateTime pubDateTime, String aiSummary, String status, String sourceType) {
     this.title = title;
     this.source = source;
-    this.time = time;
+    this.pubDateTime = pubDateTime;
     this.aiSummary = aiSummary;
     this.status = status;
     this.sourceType = sourceType;
@@ -84,12 +84,12 @@ public class Event {
     this.source = source;
   }             
 
-  public OffsetDateTime getTime() {
-    return time;
+  public OffsetDateTime getPubDateTime() {
+    return pubDateTime;
   }
 
-  public void setTime(OffsetDateTime time) {
-    this.time = time;
+  public void setTime(OffsetDateTime pubDateTime) {
+    this.pubDateTime = pubDateTime;
   }
 
   public String getAiSummary() {
