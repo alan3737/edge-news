@@ -1,10 +1,10 @@
-package com.edge_news.edge_news_api;
+package com.edge_news.event_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class EdgeNewsApiApplicationTests {
+class EventServiceApplicationTests {
 
 	@Test
 	void contextLoads() {
