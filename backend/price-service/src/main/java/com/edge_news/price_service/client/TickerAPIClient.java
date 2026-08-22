@@ -4,7 +4,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
+
 import com.edge_news.price_service.dto.TickerPriceData;
 import com.edge_news.price_service.entities.Price;
 
@@ -25,10 +26,10 @@ public class TickerAPIClient {
     try{
       TickerPriceData tickerPriceData = restClient.get().uri(url).retrieve().body(TickerPriceData.class);
       OffsetDateTime timestamp = Instant.ofEpochSecond(tickerPriceData.getT())
-        .atZone(ZoneId.of("America/New_York"))
+        .atOffset(ZoneOffset.UTC)
         .withSecond(0)
-        .withNano(0)
-        .toOffsetDateTime();
+        .withNano(0);
+  
       return new Price(ticker, tickerPriceData.getC(), timestamp);
     }
     catch (Exception e) {
