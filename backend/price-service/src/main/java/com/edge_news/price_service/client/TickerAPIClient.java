@@ -15,8 +15,8 @@ public class TickerAPIClient {
   private final RestClient restClient;
   private final String finnhubApiKey;
 
-  public TickerAPIClient(RestClient.Builder restClientBuilder) {
-    this.restClient = restClientBuilder.build();
+  public TickerAPIClient() {
+    this.restClient = RestClient.builder().build();
     this.finnhubApiKey = System.getenv("FINNHUB_API_KEY");
   }
 
@@ -35,5 +35,13 @@ public class TickerAPIClient {
     catch (Exception e) {
       throw new RuntimeException("Error fetching ticker price data for symbol: " + ticker, e);
     }
+  }
+  
+  public Price[] getTickerPriceDataBatch(String[] tickers) {
+    Price[] prices = new Price[tickers.length];
+    for (int i = 0; i < tickers.length; i++) {
+      prices[i] = getTickerPriceData(tickers[i]);
+    }
+    return prices;
   }
 }
