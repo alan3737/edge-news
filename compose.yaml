@@ -17,6 +17,8 @@ services:
         condition: service_healthy
       price-service:
         condition: service_healthy
+      event-polling-service:
+        condition: service_healthy
     develop:
       watch:
         - action: sync+restart
@@ -24,6 +26,36 @@ services:
           target: /code
         - action: rebuild
           path: ./frontend/package.json
+  event-polling-service:
+    build: ./backend/event-polling-service
+    container_name: event-polling-service
+    ports:
+      - "${EVENT_POLLING_SERVICE_PORT}:5001"
+    environment:
+      - DB_HOST=${DB_HOST} 
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      database:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend/event-polling-service
+          target: /code
+        - action: rebuild
+          path: ./backend/event-polling-service/pom.xml
   event-service:
     build: ./backend/event-service
     container_name: event-service
@@ -78,6 +110,27 @@ services:
           target: /code
         - action: rebuild
           path: ./backend/price-service/pom.xml
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
   database:
     image: postgres:15-alpine
     container_name: postgres_db
