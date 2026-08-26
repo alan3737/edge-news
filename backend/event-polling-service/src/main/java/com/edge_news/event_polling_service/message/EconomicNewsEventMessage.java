@@ -8,7 +8,17 @@ public class EconomicNewsEventMessage extends EventMessage {
         super(eventMessageId, title, source, time, sourceType);
         this.content = content;
     }
-    // Getters and setters
+    
+
+
+    public String getContent() {
+        return content;
+    }
+
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 }
 
 
