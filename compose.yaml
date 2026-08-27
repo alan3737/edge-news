@@ -38,6 +38,7 @@ services:
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_NAME=${POSTGRES_DB}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - FRED_API_KEY=${fred_api_key}
     depends_on:
       database:
         condition: service_healthy

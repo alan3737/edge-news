@@ -6,7 +6,17 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
-  environment:
-    fredApiKey: ${FRED_API_KEY}
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#noinspection SpringBootApplicationProperties
+# fred:
+#   api:
+#     key: ${FRED_API_KEY}
+
+fred:
+  api:
+    key: d7ff24e1190ccacfcbbbc226e1046149
 server:
   port: 5001

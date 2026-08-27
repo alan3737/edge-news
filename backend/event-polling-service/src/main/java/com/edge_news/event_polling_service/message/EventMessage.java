@@ -3,7 +3,7 @@ package com.edge_news.event_polling_service.message;
 import java.time.Instant;
 
 public class EventMessage {
-    private String eventMessageId;       // UUID, generated at ingestion
+    private String eventMessageId;       
     private String title;         // short human-readable headline
     private String source;        // e.g. "FRED", "Twitter", "Fed"
     private Instant time;         // when the underlying event happened

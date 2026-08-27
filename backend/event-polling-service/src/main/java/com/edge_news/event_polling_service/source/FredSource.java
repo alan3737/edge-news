@@ -3,36 +3,42 @@ package com.edge_news.event_polling_service.source;
 
 import com.edge_news.event_polling_service.message.EconomicNewsEventMessage;
 import com.edge_news.event_polling_service.message.EventMessage;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestClient;
 
-record FredReleaseDate(int releaseId, String releaseName, LocalDateTime lastUpdated, LocalDate date) {
-}
+record FredReleaseDateResponse(List<ReleaseDate> release_dates) {}
+
+record ReleaseDate(int release_id, String release_name, String release_last_updated, String date) {}
+
+record ObservationResponse(List<Observation> observations) {}
+
+record Observation(String realtime_start, String realtime_end, String date, String value) {}
+
+record FredSeriesConfig(String series_id, String release_id, String release_name) {}
 
 
-class FredSource implements NewsSource {
-
+public class FredSource implements NewsSource {
 
 
     private final RestClient restClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final List<String> requiredReleaseNames = List.of(
-        "Consumer Price Index for All Urban Consumers: All Items in U.S. City Average",
-        "Producer Price Index by Commodity: Finished Goods",
-        "Gross Domestic Product",
-        "Personal Income and Outlays",
-        "Employment Situation",
-        "Retail Sales",
-        "Industrial Production and Capacity Utilization",
-        "Housing Starts and Building Permits"
+    // @Value("${fred.api.key}")
+    // private String fredApiKey;
+    private String fredApiKey = "d7ff24e1190ccacfcbbbc226e1046149";
+    private static final Map<String, FredSeriesConfig> RELEASE_TO_SERIES = Map.of(
+        "Gross Domestic Product",              new FredSeriesConfig("GDPC1", "53", "Real GDP"),
+        "Personal Income and Outlays",          new FredSeriesConfig("PCEPI", "54", "PCE Price Index (Inflation)"),
+        "Employment Situation",                 new FredSeriesConfig("UNRATE", "50", "Unemployment Rate"),
+        "Retail Sales",                         new FredSeriesConfig("RSAFS", "?", "Retail Sales"),
+        "Housing Starts and Building Permits",  new FredSeriesConfig("HOUST", "?", "Housing Starts"),
+        "CBOE Market Statistics",               new FredSeriesConfig("VIXCLS", "200", "VIX (Volatility Index)")
     );
     public FredSource(RestClient restClient) {
         this.restClient = restClient;
@@ -40,56 +46,69 @@ class FredSource implements NewsSource {
 
     @Override
     public List<EventMessage> fetchAndNormalize() throws IOException {
-        List<FredReleaseDate> releases = getReleaseDates();
+        List<ReleaseDate> releases = getReleaseDates().release_dates();
         if (releases.isEmpty()) {
             return new ArrayList<>();
         }
 
         return releases.stream()
-            .map(release -> new EconomicNewsEventMessage(
-                "fred-release-%d-%s".formatted(release.releaseId(), release.date()),
-                release.releaseName(),
-                "FRED",
-                release.date().atStartOfDay(ZoneOffset.UTC).toInstant(),
-                "EconomicNews",
-                "https://fred.stlouisfed.org/release?rid=%d".formatted(release.releaseId())
-            ))
-            .map(event -> (EventMessage) event)
+            .map(release -> {
+                try {
+                    FredSeriesConfig seriesConfig = RELEASE_TO_SERIES.get(release.release_name());
+                    Observation releaseData = getReleaseData(seriesConfig.series_id());
+                    EventMessage event = new EconomicNewsEventMessage(
+                        release.release_name() + "-" + release.date(),
+                        release.release_name(),
+                        "FRED",
+                        LocalDateTime.parse(release.date() + "T00:00:00").toInstant(ZoneOffset.UTC),
+                        "EconomicNews",
+                        releaseData.value()
+                    );
+                    return event;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            })
             .toList();
     }
 
-    private List<FredReleaseDate> getReleaseDates() throws IOException {
-        String url = "https://api.stlouisfed.org/fred/releases/dates?api_key=d7ff24e1190ccacfcbbbc226e1046149&file_type=json&sort_order=asc&include_release_dates_with_no_data=true&realtime_start=%s&realtime_end=9999-12-31"
-            .formatted(LocalDate.now());
+    private FredReleaseDateResponse getReleaseDates() throws IOException {
+        System.out.println(fredApiKey);
+        String url = "https://api.stlouisfed.org/fred/releases/dates?api_key=%s&file_type=json&sort_order=asc&include_release_dates_with_no_data=true&realtime_start=%s&realtime_end=9999-12-31"
+            .formatted(fredApiKey, LocalDate.now());
 
-        String response = this.restClient.get()
+        FredReleaseDateResponse response = this.restClient.get()
             .uri(url)
             .retrieve()
-            .body(String.class);
+            .body(FredReleaseDateResponse.class);
 
-        if (response == null || response.isBlank()) {
-            return new ArrayList<>();
+        if (response == null || response.release_dates().isEmpty()) {
+            return new FredReleaseDateResponse(new ArrayList<>());
         }
 
-        return parseReleaseDates(response).stream()
-            .filter(release -> requiredReleaseNames.contains(release.releaseName()))
-            .toList();
+        return new FredReleaseDateResponse(
+            response.release_dates().stream()
+                .filter(release -> RELEASE_TO_SERIES.containsKey(release.release_name()) && release.date() != LocalDate.now().toString())
+                .toList()
+        );
+        
     }
 
-    private List<FredReleaseDate> parseReleaseDates(String response) throws IOException {
-        JsonNode releaseDates = objectMapper.readTree(response).path("release_dates");
-        List<FredReleaseDate> releases = new ArrayList<>();
-        for (JsonNode releaseDate : releaseDates) {
-            if (releaseDate.hasNonNull("release_id")
-                && releaseDate.hasNonNull("release_name")
-                && releaseDate.hasNonNull("date")) {
-                releases.add(new FredReleaseDate(
-                    releaseDate.get("release_id").asInt(),
-                    releaseDate.get("release_name").asText(),
-                    LocalDate.parse(releaseDate.get("date").asText())
-                ));
-            }
+    private Observation getReleaseData(String series_id) throws IOException {
+        System.out.println(series_id);
+        LocalDate today = LocalDate.now();
+        LocalDate startOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
+        LocalDate endOfLastMonth = today.withDayOfMonth(1).minusDays(1);
+        String url = "https://api.stlouisfed.org/fred/series/observations?series_id=%s&api_key=%s&file_type=json&observation_start=%s&observation_end=%s".formatted(series_id, fredApiKey, startOfLastMonth, endOfLastMonth);
+        System.out.println(url);
+        ObservationResponse response = this.restClient.get()
+            .uri(url)
+            .retrieve()
+            .body(ObservationResponse.class);
+        if (response == null || response.observations().isEmpty()) {
+            throw new IllegalStateException("No observations found for series_id: " + series_id);
         }
-        return releases;
+
+        return response.observations().get(0);
     }
 }
