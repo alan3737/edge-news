@@ -34,7 +34,7 @@ public class EventPollingServiceApplication {
     public CommandLineRunner testKafkaOnStartup(Publisher publisher) {
         return args -> {
             EventMessage testMessage = new EconomicNewsEventMessage(
-                UUID.randomUUID().toString(),
+                "GDPC1-2026-01-01",
                 "Test CPI Event",
                 "FRED",
                 Instant.now(),

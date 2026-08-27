@@ -57,7 +57,7 @@ public class FredSource implements NewsSource {
                     FredSeriesConfig seriesConfig = RELEASE_TO_SERIES.get(release.release_name());
                     Observation releaseData = getReleaseData(seriesConfig.series_id());
                     EventMessage event = new EconomicNewsEventMessage(
-                        release.release_name() + "-" + release.date(),
+                        seriesConfig.series_id() + "-" + release.date(),
                         release.release_name(),
                         "FRED",
                         LocalDateTime.parse(release.date() + "T00:00:00").toInstant(ZoneOffset.UTC),
