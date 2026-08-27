@@ -6,7 +6,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class PriceScheduler {
   
-  PriceService priceService;
+  private final PriceService priceService;
+
+  public PriceScheduler(PriceService priceService) {
+    this.priceService = priceService;
+  }
 
   @Scheduled(fixedRate = 60000) // Run every 60 seconds
   public void pullAndSaveTickerPriceData(){

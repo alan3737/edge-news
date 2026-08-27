@@ -10,8 +10,8 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
   @Query("""
           SELECT p
           FROM Price p
-          WHERE p.timestamp = (
-              SELECT MAX(p2.timestamp)
+          WHERE p.time = (
+              SELECT MAX(p2.time)
               FROM Price p2
               WHERE p2.ticker = p.ticker
           )
