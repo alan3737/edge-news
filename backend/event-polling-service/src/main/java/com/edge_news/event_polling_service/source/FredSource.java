@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 record FredReleaseDateResponse(List<ReleaseDate> release_dates) {}
@@ -23,15 +24,15 @@ record Observation(String realtime_start, String realtime_end, String date, Stri
 
 record FredSeriesConfig(String series_id, String release_id, String release_name) {}
 
-
+@Component
 public class FredSource implements NewsSource {
 
 
     private final RestClient restClient;
 
-    // @Value("${fred.api.key}")
-    // private String fredApiKey;
-    private String fredApiKey = "d7ff24e1190ccacfcbbbc226e1046149";
+    @Value("${fred.api.key}")
+    private String fredApiKey;
+
     private static final Map<String, FredSeriesConfig> RELEASE_TO_SERIES = Map.of(
         "Gross Domestic Product",              new FredSeriesConfig("GDPC1", "53", "Real GDP"),
         "Personal Income and Outlays",          new FredSeriesConfig("PCEPI", "54", "PCE Price Index (Inflation)"),
@@ -46,6 +47,7 @@ public class FredSource implements NewsSource {
 
     @Override
     public List<EventMessage> fetchAndNormalize() throws IOException {
+        System.out.println("Fetching data from FRED API...");
         List<ReleaseDate> releases = getReleaseDates().release_dates();
         if (releases.isEmpty()) {
             return new ArrayList<>();
@@ -58,7 +60,7 @@ public class FredSource implements NewsSource {
                     Observation releaseData = getReleaseData(seriesConfig.series_id());
                     EventMessage event = new EconomicNewsEventMessage(
                         seriesConfig.series_id() + "-" + release.date(),
-                        release.release_name(),
+                        seriesConfig.series_id(),
                         "FRED",
                         LocalDateTime.parse(release.date() + "T00:00:00").toInstant(ZoneOffset.UTC),
                         "EconomicNews",
@@ -73,7 +75,6 @@ public class FredSource implements NewsSource {
     }
 
     private FredReleaseDateResponse getReleaseDates() throws IOException {
-        System.out.println(fredApiKey);
         String url = "https://api.stlouisfed.org/fred/releases/dates?api_key=%s&file_type=json&sort_order=asc&include_release_dates_with_no_data=true&realtime_start=%s&realtime_end=9999-12-31"
             .formatted(fredApiKey, LocalDate.now());
 
@@ -82,25 +83,20 @@ public class FredSource implements NewsSource {
             .retrieve()
             .body(FredReleaseDateResponse.class);
 
-        if (response == null || response.release_dates().isEmpty()) {
+        if (response == null) {
             return new FredReleaseDateResponse(new ArrayList<>());
         }
 
         return new FredReleaseDateResponse(
             response.release_dates().stream()
-                .filter(release -> RELEASE_TO_SERIES.containsKey(release.release_name()) && release.date() != LocalDate.now().toString())
+                .filter(release -> RELEASE_TO_SERIES.containsKey(release.release_name()) && release.date().equals(LocalDate.now().toString()))
                 .toList()
         );
         
     }
 
     private Observation getReleaseData(String series_id) throws IOException {
-        System.out.println(series_id);
-        LocalDate today = LocalDate.now();
-        LocalDate startOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
-        LocalDate endOfLastMonth = today.withDayOfMonth(1).minusDays(1);
-        String url = "https://api.stlouisfed.org/fred/series/observations?series_id=%s&api_key=%s&file_type=json&observation_start=%s&observation_end=%s".formatted(series_id, fredApiKey, startOfLastMonth, endOfLastMonth);
-        System.out.println(url);
+        String url = "https://api.stlouisfed.org/fred/series/observations?series_id=%s&api_key=%s&file_type=json&sort_order=desc&limit=1".formatted(series_id, fredApiKey);
         ObservationResponse response = this.restClient.get()
             .uri(url)
             .retrieve()
