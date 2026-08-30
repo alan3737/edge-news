@@ -9,7 +9,7 @@ public class FredApiConfig {
     @Bean
     public RestClient restClient() {
         return RestClient.builder()
-            .baseUrl("https://api.stlouisfed.org/fred")
+            .baseUrl("")
             .build();
     }
 }

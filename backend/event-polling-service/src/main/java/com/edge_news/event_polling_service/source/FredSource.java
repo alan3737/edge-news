@@ -94,18 +94,18 @@ public class FredSource implements NewsSource {
     }
 
     private FredReleaseDateResponse getReleaseDates() throws IOException {
+
+        System.out.println("Fetching Fred release dates...");
         String url = "https://api.stlouisfed.org/fred/releases/dates?api_key=%s&file_type=json&sort_order=asc&include_release_dates_with_no_data=true&realtime_start=%s&realtime_end=9999-12-31"
             .formatted(fredApiKey, LocalDate.now());
-
+        System.out.println("Fetching Fred release dates from URL: " + url);
         FredReleaseDateResponse response = this.restClient.get()
             .uri(url)
             .retrieve()
             .body(FredReleaseDateResponse.class);
-
         if (response == null) {
             return new FredReleaseDateResponse(new ArrayList<>());
         }
-
         return new FredReleaseDateResponse(
             response.release_dates().stream()
                 .filter(release -> RELEASE_TO_SERIES.containsKey(release.release_name()) && release.date().equals(LocalDate.now().toString()))

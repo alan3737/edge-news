@@ -1,25 +1,9 @@
 package com.edge_news.event_polling_service.publisher;
 
 import org.springframework.kafka.core.KafkaTemplate;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.kafka.config.TopicBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import com.edge_news.event_polling_service.message.EventMessage;
-
-@Configuration
-class KafkaTopicConfig {
-
-    @Bean
-    public NewTopic economicNewsTopic() {
-        return TopicBuilder.name("news.raw.economic")
-            .partitions(3)
-            .replicas(1)
-            .build();
-    }
-}
 
 @Component
 public class KafkaEventPublisher implements Publisher {
