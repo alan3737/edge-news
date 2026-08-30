@@ -6,17 +6,20 @@ import com.edge_news.price_service.client.TickerAPIClient;
 import com.edge_news.price_service.entities.Price;
 import java.util.List;
 import java.util.ArrayList;
+import com.edge_news.price_service.publishers.KafkaPricePublisher;
 
 @Service
 public class PriceService {
   private final PriceRepository priceRepository;
   private final String[] tickers;
   private final TickerAPIClient tickerAPIClient;
+  private final KafkaPricePublisher kafkaEventPublisher;
 
-  public PriceService(PriceRepository priceRepository) {
+  public PriceService(PriceRepository priceRepository, TickerAPIClient tickerAPIClient, KafkaPricePublisher kafkaEventPublisher) {
     this.priceRepository = priceRepository;
     this.tickers = new String[]{"DIA", "SPY", "QQQ"};
-    this.tickerAPIClient = new TickerAPIClient();
+    this.tickerAPIClient = tickerAPIClient;
+    this.kafkaEventPublisher = kafkaEventPublisher;
   }
 
   public void savePrice(Price price) {
@@ -40,6 +43,9 @@ public class PriceService {
           savePrice(price);
           newPrices.add(price);
         }
+      }
+      if(!newPrices.isEmpty()){
+        kafkaEventPublisher.publish(newPrices);
       }
     }
     catch (Exception e) {
