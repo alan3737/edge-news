@@ -7,7 +7,9 @@ import com.edge_news.event_polling_service.message.EventMessage;
 
 @Component
 public class KafkaEventPublisher implements Publisher {
-    // Implementation of KafkaEventPublisher
+    /**
+     * Implementation of KafkaEventPublisher
+     */
     private final KafkaTemplate<String, EventMessage> kafkaTemplate;
 
     public KafkaEventPublisher(KafkaTemplate<String, EventMessage> kafkaTemplate) {
