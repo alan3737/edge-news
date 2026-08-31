@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -77,7 +78,7 @@ public class FredSource implements NewsSource {
                     }
                     lastProcessedDates.put(seriesConfig.series_id(), LocalDate.parse(release.date()));
                     EventMessage event = new EconomicNewsEventMessage(
-                        seriesConfig.series_id() + "-" + release.date(),
+                        UUID.randomUUID().toString(),
                         seriesConfig.series_id(),
                         "FRED",
                         LocalDateTime.parse(release.date() + "T00:00:00").toInstant(ZoneOffset.UTC),
