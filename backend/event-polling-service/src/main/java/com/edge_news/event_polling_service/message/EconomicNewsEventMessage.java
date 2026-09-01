@@ -5,7 +5,7 @@ public class EconomicNewsEventMessage extends EventMessage {
     private String content;
 
     public EconomicNewsEventMessage(String eventMessageId, String title, String source, Instant time, String sourceType, String content) {
-        super(eventMessageId, title, source, time, sourceType);
+        super(eventMessageId, source, time, sourceType);
         this.content = content;
     }
     
