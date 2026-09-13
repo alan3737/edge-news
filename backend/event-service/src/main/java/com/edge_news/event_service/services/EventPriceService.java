@@ -21,5 +21,9 @@ public class EventPriceService {
   public void saveEventPrices(List<EventPrice> eventPrices) {
     eventPriceRepository.saveAll(eventPrices);
   }
+
+  public void saveEventPrice(EventPrice eventPrice) {
+    eventPriceRepository.save(eventPrice);
+  }
   
 }

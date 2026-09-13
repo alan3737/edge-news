@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.time.OffsetDateTime;
 
 @Service
 public class PriceService {
@@ -30,6 +31,10 @@ public class PriceService {
     priceRepository.save(price);
   }
 
+  public List<Price> getLatestPriceForEveryTicker(){
+    return priceRepository.findLatestForEveryTicker();
+  }
+
   public void pullAndSaveTickerPriceData() {
     try {
       Price [] prices = tickerAPIClient.getTickerPriceDataBatch(tickers);
@@ -40,7 +45,7 @@ public class PriceService {
       for(Price price : latestPrices) {
         latestPriceMap.put(price.getTicker(), price);
       }
-      
+
       for(Price price: prices){
 
         boolean isNewPrice = true;

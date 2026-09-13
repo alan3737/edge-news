@@ -25,4 +25,9 @@ public class EventService {
 
     return eventRepository.findEventsWithinLast30Minutes(cutoff);
   }
+
+  public void saveEvent(Event event) {
+    eventRepository.save(event);
+  }
+  
 }

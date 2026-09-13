@@ -1,5 +1,6 @@
 package com.edge_news.event_service.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,21 +23,18 @@ public class Event {
   @OneToOne(mappedBy = "event")
   private SocialMedia socialMedia;
 
-  private String title;
   private String source;
   private OffsetDateTime pubDateTime;
+  @Column(columnDefinition = "TEXT")
   private String aiSummary;
-  private String status;
   private String sourceType;
 
   public Event() {}   
 
-  public Event(String title, String source, OffsetDateTime pubDateTime, String aiSummary, String status, String sourceType) {
-    this.title = title;
+  public Event(String source, OffsetDateTime pubDateTime, String aiSummary, String sourceType) {
     this.source = source;
     this.pubDateTime = pubDateTime;
     this.aiSummary = aiSummary;
-    this.status = status;
     this.sourceType = sourceType;
   }
 
@@ -68,14 +66,6 @@ public class Event {
     this.socialMedia = socialMedia;
   }
 
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
-  }
-
   public String getSource() {
     return source;
   }
@@ -88,7 +78,7 @@ public class Event {
     return pubDateTime;
   }
 
-  public void setTime(OffsetDateTime pubDateTime) {
+  public void setPubDateTime(OffsetDateTime pubDateTime) {
     this.pubDateTime = pubDateTime;
   }
 
@@ -98,14 +88,6 @@ public class Event {
 
   public void setAiSummary(String aiSummary) {
     this.aiSummary = aiSummary;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
   }
 
   public String getSourceType() {

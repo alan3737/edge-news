@@ -15,8 +15,8 @@ public class TickerAPIClient {
   private final RestClient restClient;
   private final String finnhubApiKey;
 
-  public TickerAPIClient() {
-    this.restClient = RestClient.builder().build();
+  public TickerAPIClient(RestClient restClient) {
+    this.restClient = restClient;
     this.finnhubApiKey = System.getenv("FINNHUB_API_KEY");
   }
 

@@ -17,13 +17,15 @@ public class EconomicNews {
   @JoinColumn(name = "eventId", unique = true, nullable = false)
   private Event event;
 
+  private String title;
   private String data;
   private String description;
 
   public EconomicNews() {}
 
-  public EconomicNews(Event event, String data, String description) {
+  public EconomicNews(Event event, String title, String data, String description) {
     this.event = event;
+    this.title = title;
     this.data = data;
     this.description = description;
   }
@@ -38,6 +40,14 @@ public class EconomicNews {
 
   public void setEvent(Event event) {
     this.event = event;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
   }
 
   public String getData() {

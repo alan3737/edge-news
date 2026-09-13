@@ -1,5 +1,6 @@
 package com.edge_news.event_service.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,13 +18,16 @@ public class Meeting {
   @JoinColumn(name = "eventId", unique = true, nullable = false)
   private Event event;
 
+  private String title;
   private String linkToMeeting;
+  @Column(columnDefinition = "TEXT")
   private String description;
 
   public Meeting() {}
 
-  public Meeting(Event event, String linkToMeeting, String description) {
+  public Meeting(Event event, String title, String linkToMeeting, String description) {
     this.event = event;
+    this.title = title;
     this.linkToMeeting = linkToMeeting;
     this.description = description;
   }
@@ -38,6 +42,14 @@ public class Meeting {
 
   public void setEvent(Event event) {
     this.event = event;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
   }
 
   public String getLinkToMeeting() {
